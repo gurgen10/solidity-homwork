@@ -1,16 +1,17 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "hardhat/console.sol";
+import "./InvestTokenG.sol";
 
-contract InvestG is ERC20 {
+contract InvestG {
+    InvestTokenG investTokenG;
     mapping(address => uint256) public tokenInvestments;
     mapping(address => uint256) public etherInvestments;
     uint16 countedBlock = 0;
     address owner;
 
-    constructor() ERC20("InvestG", "ING") {
+    constructor() {
 		owner = msg.sender;
     }
 
@@ -28,15 +29,15 @@ contract InvestG is ERC20 {
             tokenInvestments[msg.sender] = _tokenval;
         }
         if(countedBlock == 5) {
-            percents(msg.sender);
+            percents();
             countedBlock = 0; 
         }
 
     }
 
-    function percents(address _investor) private {
-        tokenInvestments[_investor] +=  tokenInvestments[_investor] * 5 / 100;
-        etherInvestments[_investor] +=  etherInvestments[_investor] * 5 / 100;
+    function percents() private {
+        tokenInvestments[msg.sender] +=  tokenInvestments[msg.sender] * 105 / 100 - tokenInvestments[msg.sender];
+        etherInvestments[msg.sender] +=  etherInvestments[msg.sender] * 105 / 100 - tokenInvestments[msg.sender];
     }
 
     function withdrawEth(uint256 _amount) payable external onlyOwner {

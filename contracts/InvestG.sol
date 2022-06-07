@@ -45,6 +45,7 @@ contract InvestG {
         tokenInvestments[msg.sender]  -= _amount;
 	}
     function claimToken() external {
+        console.log("block.number", block.number);
         investTokenG.safeTransfer(msg.sender, tokenRewards[msg.sender]);
         tokenRewards[msg.sender] = 0;
     }
@@ -58,6 +59,7 @@ contract InvestG {
         return blockNumbers[msg.sender].length == 5;
     }
     function percents (uint256 _amount) private {
+        console.log(blockNumbers[msg.sender].length);
         if(checkRewardBlokNumber()) {
             delete blockNumbers[msg.sender];
             if(_amount == 0) {

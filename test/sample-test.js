@@ -1,19 +1,17 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
 const {
 	ethers: {
     utils:{ parseEther },
 		getContractFactory,
     getSigners,
 		BigNumber,
-		getNamedSigners
 	}
 } = require("hardhat");
 
 describe("InvestG", function () {
-  let investG, caller1, caller2;
-	beforeEach("Before: ", async () => {
-		[caller1, caller2] = await getSigners();
+  let investG, caller1, caller2, caller3;
+	before("Before: ", async () => {
+		[caller1, caller2, caller3] = await getSigners();
 		const InvestTokenG = await hre.ethers.getContractFactory("InvestTokenG");
 		const investTokenG =  await InvestTokenG.deploy();
 
@@ -46,19 +44,38 @@ describe("InvestG", function () {
   })
   describe("Claiming", () => {
     it("Should claim token", async () => {
-      for (let index = 0; index < 5; index++) {
+      for (let index = 0; index <= 5; index++) {
         await investG.invest(parseEther("1"));
-
       }
       let reward = 1 * 5 / 100;
 
-      
-      
       expect(await investG.tokenRewards(caller1.address)).to.eq(parseEther(reward.toString()))
       await investG.claimToken()
-      // expect(await investG.connect(caller2).tokenRewards(caller2.address)).to.eq(parseEther("0"))
+      expect(await investG.connect(caller2).tokenRewards(caller2.address)).to.eq(parseEther("0"))
+    })
+    it("Should claim ether", async () => {
+      for (let index = 0; index <= 5; index++) {
+        await investG.invest("0",{ value: parseEther("1") });
+      }
+      let reward = 1 * 5 / 100;
 
-      
+      expect(await investG.etherRewards(caller1.address)).to.eq(parseEther(reward.toString()))
+      await investG.claimToken()
+      expect(await investG.connect(caller2).etherRewards(caller2.address)).to.eq(parseEther("0"))
+    })
+  })
+  describe("Withdraw", () => {
+    it("Should withdraw token", async () => {
+      await investG.connect(caller3).invest(parseEther("1"));
+      expect(await investG.connect(caller3).tokenInvestments(caller3.address)).to.eq(parseEther("1"))
+      await investG.connect(caller3).withdrawToken(parseEther("0.5"));
+      expect(await investG.connect(caller3).tokenInvestments(caller3.address)).to.eq(parseEther("0.5"))
+    })
+    it("Should withdraw ether", async () => {
+      await investG.connect(caller3).invest("0", {value: parseEther("1.1")});
+      expect(await investG.connect(caller3).etherInvestments(caller3.address)).to.eq(parseEther("1.1"))
+      await investG.connect(caller3).withdrawEth(parseEther("0.5"));
+      expect(await investG.connect(caller3).etherInvestments(caller3.address)).to.eq(parseEther("0.6"))
     })
   })
 });
